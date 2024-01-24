@@ -52,8 +52,6 @@ class MyListener(roypy.IDepthDataListener):
     # Function to Process Depth Data and Give Directions
     def process_depth_data_and_give_directions(self, depth_image):
         
-
-
         height, width = depth_image.shape
         left_section = depth_image[:, :width // 3]
         center_section = depth_image[:, width // 3:2 * width // 3]
@@ -62,21 +60,19 @@ class MyListener(roypy.IDepthDataListener):
         # Threshold for considering an obstacle 'close'
         obstacle_threshold = 0.7
 
-        left_min = np.min(left_section[left_section > 0])
-        center_min = np.min(center_section[center_section > 0])
-        right_min = np.min(right_section[right_section > 0])
+        left_min = np.min(left_section[left_section > 0]) if np.any(left_section > 0) else float('inf')
+        center_min = np.min(center_section[center_section > 0]) if np.any(center_section > 0) else float('inf')
+        right_min = np.min(right_section[right_section > 0]) if np.any(right_section > 0) else float('inf')
 
-        print(left_min, center_min, right_min)
-
-        # Determine direction
-        if center_min > obstacle_threshold and (left_min <= obstacle_threshold or right_min <= obstacle_threshold):
-            direction = 'forward'
-        elif left_min > obstacle_threshold:
-            direction = 'left'
-        elif right_min > obstacle_threshold:
-            direction = 'right'
-        else:
+        # Determine direction based on the farthest path
+        if all(val <= obstacle_threshold for val in [left_min, center_min, right_min]):
             direction = 'stop'
+        elif center_min >= max(left_min, right_min):
+            direction = 'forward'
+        elif left_min > right_min:
+            direction = 'left'
+        else:  # right_min is the largest
+            direction = 'right'
 
         print(direction)
 
