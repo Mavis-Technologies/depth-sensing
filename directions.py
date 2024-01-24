@@ -53,9 +53,12 @@ class MyListener(roypy.IDepthDataListener):
     def process_depth_data_and_give_directions(self, depth_image):
         
         height, width = depth_image.shape
-        left_section = depth_image[:, :width // 3]
-        center_section = depth_image[:, width // 3:2 * width // 3]
-        right_section = depth_image[:, 2 * width // 3:]
+        center_width = width // 4  # Making the center section smaller
+        side_width = (width - center_width) // 2
+
+        left_section = depth_image[:, :side_width]
+        center_section = depth_image[:, side_width:side_width + center_width]
+        right_section = depth_image[:, side_width + center_width:]
 
         # Threshold for considering an obstacle 'close'
         obstacle_threshold = 0.7
